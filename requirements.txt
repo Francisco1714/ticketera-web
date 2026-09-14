@@ -1,0 +1,13 @@
+# Dependencias principales
+django>=4.2,<5.0
+mongoengine>=0.29.0
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.5.0
+
+# Pruebas
+pytest>=7.4.0
+pytest-django>=4.7.0
+
+# Utilidades
+python-dotenv>=1.0.0
