@@ -914,3 +914,37 @@ En su lugar, la IA debe:
 4. Solamente escribir el archivo cuando el usuario lo pida explícitamente.
 
 El usuario es quien decide cuándo y cómo escribir los archivos en el proyecto.
+
+---
+
+# 38. Progreso del proyecto
+
+## Completado
+
+- [x] Estructura inicial Django
+- [x] Estructura inicial FastAPI
+- [x] Configuración MongoEngine
+- [x] Esquemas Pydantic (schemas/ticket.py)
+  - TicketCreate
+  - TicketResponse
+  - Solicitante
+  - Comentario
+  - HistorialCambio
+- [x] Endpoint POST /api/v1/tickets
+- [x] Documentación Swagger UI funcional
+
+## En progreso
+
+- [ ] Modelo MongoDB (models/ticket.py)
+
+## Pendiente
+
+- [ ] Conectar endpoint con MongoDB
+- [ ] Generación automática de ticket_id
+- [ ] Endpoints GET, PUT, PATCH, DELETE
+- [ ] Sistema de autenticación
+- [ ] Roles y permisos
+- [ ] Formularios Django
+- [ ] Templates HTML/CSS
+- [ ] Pruebas pytest
+- [ ] Validaciones (RUT, email, teléfono)
