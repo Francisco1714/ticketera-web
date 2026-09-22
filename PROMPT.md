@@ -919,8 +919,8 @@ El usuario es quien decide cuándo y cómo escribir los archivos en el proyecto.
 
 # 38. Progreso del proyecto
 
-> **Última actividad:** verificación de endpoints y documentación en Swagger UI.
-> **Para retomar:** continuar con el tramo marcado en "En progreso" (pruebas pytest del CRUD).
+> **Última actividad:** suite pytest del CRUD (5/7 passed, 2 fallas conocidas BUG-01/BUG-02).
+> **Para retomar:** continuar con la tarea de corrección de bugs marcada en "En progreso".
 
 ## Completado
 
@@ -942,10 +942,7 @@ El usuario es quien decide cuándo y cómo escribir los archivos en el proyecto.
 - [x] Endpoints GET, GET/{id}, PUT, PATCH, DELETE
 - [x] Conexión de endpoints con MongoDB
 - [x] Documentación Swagger UI funcional
-
-## En progreso
-
-- [ ] Pruebas pytest del CRUD (carpeta `test/` + conftest.py + pytest.ini con TestClient)
+- [x] Suite pytest del CRUD (carpeta `test/` + conftest.py + pytest.ini con TestClient)
   - Resultado: **5/7 passed**, 2 fallas conocidas (BUG-01/BUG-02)
   - [x] test_crear_ticket (POST) — PASSED
   - [x] test_listar_tickets (GET) — PASSED
@@ -954,6 +951,19 @@ El usuario es quien decide cuándo y cómo escribir los archivos en el proyecto.
   - [x] test_actualizar_parcial (PATCH) — PASSED
   - [ ] test_eliminar_ticket (DELETE) — FAILED: espera 204, recibe otro status (BUG-01) y GET posterior espera 404, recibe 500 (BUG-02)
   - [ ] test_ticket_inexistente (404) — FAILED: espera 404, recibe 500 (BUG-02)
+
+## En progreso
+
+### Tarea de corrección de bugs (parchar al final del tramo de tests)
+
+- [ ] **BUG-01**: DELETE devuelve body con status 204 (debe ir sin return) — `api/main.py` eliminar_ticket
+- [ ] **BUG-02**: GET/PUT/PATCH/DELETE sin manejo de `DoesNotExist` → error 500 en vez de 404 — `api/main.py`
+- [ ] **BUG-03**: Typo `'colection'` en `meta` de `api/models/ticket.py` (debe ser `'collection'`)
+- [ ] **BUG-04**: `api/main.py` no carga `load_dotenv()` — FastAPI no lee `.env` por sí solo
+- [ ] **BUG-05**: `TicketUpdate` (PUT) no incluye campo `estado`
+- [ ] **BUG-06**: Comentarios/historial siempre se devuelven vacíos `[]` en respuestas
+
+> Al corregir BUG-01 y BUG-02, re-ejecutar `test_eliminar_ticket` y `test_ticket_inexistente` hasta que queden en verde (7/7).
 
 ## Pendiente
 
@@ -964,16 +974,3 @@ El usuario es quien decide cuándo y cómo escribir los archivos en el proyecto.
 - [ ] Templates HTML/CSS
 - [ ] Endpoints: comentarios, asignación, categorías, usuarios, estadísticas
 - [ ] README.md
-
-## Tarea de corrección (parchar al final del tramo de tests)
-
-Bugs agrupados para corregir en una tarea específica, después de completar la suite:
-
-- [ ] **BUG-01**: DELETE devuelve body con status 204 (debe ir sin return) — `api/main.py` eliminar_ticket
-- [ ] **BUG-02**: GET/PUT/PATCH/DELETE sin manejo de `DoesNotExist` → error 500 en vez de 404 — `api/main.py`
-- [ ] **BUG-03**: Typo `'colection'` en `meta` de `api/models/ticket.py` (debe ser `'collection'`)
-- [ ] **BUG-04**: `api/main.py` no carga `load_dotenv()` — FastAPI no lee `.env` por sí solo
-- [ ] **BUG-05**: `TicketUpdate` (PUT) no incluye campo `estado`
-- [ ] **BUG-06**: Comentarios/historial siempre se devuelven vacíos `[]` en respuestas
-
-> Al corregir BUG-01 y BUG-02, re-ejecutar `test_eliminar_ticket` y crear `test_ticket_inexistente`.

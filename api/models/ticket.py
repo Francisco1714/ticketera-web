@@ -47,6 +47,6 @@ class Ticket(Document):
     historial_cambios = ListField(EmbeddedDocumentField(HistorialCambio))
 
     meta = {
-        'colection':'tickets', # Nombre de la coleccion de MongoDB
+        'collection':'tickets', # Nombre de la coleccion de MongoDB
         'ordering':['-fecha_creacion'] # Ordenar por fecha descendente
     }

@@ -1,9 +1,13 @@
 import os
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from mongoengine.errors import DoesNotExist
 from mongoengine import connect
 from datetime import datetime
 from .schemas.ticket import TicketCreate, TicketResponse, TicketUpdate, TicketPatch
 from .models.ticket import Ticket, Solicitante
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = FastAPI(title="Ticketera API", version="0.1.0")
 
@@ -99,8 +103,10 @@ def listar_tickets():
 @app.get("/api/v1/tickets/{ticket_id}", response_model=TicketResponse)
 def obtener_ticket(ticket_id: str):
     """Obtener un ticket por su ID"""
-    ticket = Ticket.objects.get(ticket_id=ticket_id)
-    
+    try:
+        ticket = Ticket.objects.get(ticket_id=ticket_id)
+    except DoesNotExist:
+        raise HTTPException(status_code=404, detail="Ticket no encontrado")
     return TicketResponse(
         ticket_id=ticket.ticket_id,
         solicitante={
@@ -126,8 +132,10 @@ def obtener_ticket(ticket_id: str):
 @app.put("/api/v1/tickets/{ticket_id}", response_model=TicketResponse)
 def actualizar_ticket(ticket_id: str, datos: TicketUpdate):
     """Actualizar un ticket completo"""
-    ticket = Ticket.objects.get(ticket_id=ticket_id)
-    
+    try:
+        ticket = Ticket.objects.get(ticket_id=ticket_id)
+    except:
+        raise HTTPException(status_code=404, detail="Ticket no encontrado")
     ticket.solicitante.rut = datos.solicitante.rut
     ticket.solicitante.nombre = datos.solicitante.nombre
     ticket.solicitante.telefono = datos.solicitante.telefono
@@ -138,7 +146,8 @@ def actualizar_ticket(ticket_id: str, datos: TicketUpdate):
     ticket.categoria = datos.categoria
     ticket.prioridad = datos.prioridad
     ticket.fecha_actualizacion = datetime.now()
-    
+    if datos.estado is not None:
+        ticket.estado = datos.estado
     ticket.save()
     
     return TicketResponse(
@@ -159,15 +168,17 @@ def actualizar_ticket(ticket_id: str, datos: TicketUpdate):
         fecha_creacion=ticket.fecha_creacion,
         fecha_actualizacion=ticket.fecha_actualizacion,
         fecha_resolucion=ticket.fecha_resolucion,
-        comentarios=[],
-        historial_cambios=[]
+        comentarios=ticket.comentarios,
+        historial_cambios=ticket.historial_cambios,
     )
 
 @app.patch("/api/v1/tickets/{ticket_id}", response_model=TicketResponse)
 def actualizar_parcial_ticket(ticket_id: str, datos: TicketPatch):
     """Actualizar campos específicos de un ticket"""
-    ticket = Ticket.objects.get(ticket_id=ticket_id)
-    
+    try:
+        ticket = Ticket.objects.get(ticket_id=ticket_id)
+    except:
+        raise HTTPException(status_code=404, detail="Ticket no encontrado")
     if datos.estado is not None:
         ticket.estado = datos.estado
     if datos.prioridad is not None:
@@ -203,6 +214,9 @@ def actualizar_parcial_ticket(ticket_id: str, datos: TicketPatch):
 @app.delete("/api/v1/tickets/{ticket_id}", status_code=204)
 def eliminar_ticket(ticket_id: str):
     """Eliminar un ticket por su ID"""
-    ticket = Ticket.objects.get(ticket_id=ticket_id)
+    try:
+        ticket = Ticket.objects.get(ticket_id=ticket_id)
+    except:
+        raise HTTPException(status_code=404, detail="Ticket no encontrado")
     ticket.delete()
-    return {"message": "Ticket eliminado correctamente"}
+    

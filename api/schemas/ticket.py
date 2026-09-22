@@ -53,6 +53,7 @@ class TicketUpdate(BaseModel):
     descripcion:str = Field(..., min_length=10)
     categoria:str
     prioridad:str
+    estado:Optional[str] = None
 
 class TicketPatch(BaseModel):
     """Esquema para actualizacion parcial"""
