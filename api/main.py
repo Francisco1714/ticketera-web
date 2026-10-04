@@ -134,7 +134,7 @@ def actualizar_ticket(ticket_id: str, datos: TicketUpdate):
     """Actualizar un ticket completo"""
     try:
         ticket = Ticket.objects.get(ticket_id=ticket_id)
-    except:
+    except DoesNotExist:
         raise HTTPException(status_code=404, detail="Ticket no encontrado")
     ticket.solicitante.rut = datos.solicitante.rut
     ticket.solicitante.nombre = datos.solicitante.nombre
@@ -177,7 +177,7 @@ def actualizar_parcial_ticket(ticket_id: str, datos: TicketPatch):
     """Actualizar campos específicos de un ticket"""
     try:
         ticket = Ticket.objects.get(ticket_id=ticket_id)
-    except:
+    except DoesNotExist:
         raise HTTPException(status_code=404, detail="Ticket no encontrado")
     if datos.estado is not None:
         ticket.estado = datos.estado
@@ -216,7 +216,7 @@ def eliminar_ticket(ticket_id: str):
     """Eliminar un ticket por su ID"""
     try:
         ticket = Ticket.objects.get(ticket_id=ticket_id)
-    except:
+    except DoesNotExist:
         raise HTTPException(status_code=404, detail="Ticket no encontrado")
     ticket.delete()
     
