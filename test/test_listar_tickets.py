@@ -19,5 +19,10 @@ def test_listar_tickets(client):
 
     assert response.status_code == 200
     data = response.json()
-    assert  len(data) == 2
+    assert len(data) == 2
     assert data[0]["ticket_id"].startswith("TK-")
+
+
+def test_listar_tickets_con_comentarios(client, ticket_con_comentario):
+    data = client.get("/api/v1/tickets").json()
+    assert data[0]["comentarios"][0]["texto"] == "revisando"
