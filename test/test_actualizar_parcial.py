@@ -25,3 +25,13 @@ def test_actualizar_parcial(client):
     assert data["estado"] == "en progreso"
     assert data["tecnico_asignado"] == "María López"
     assert data["prioridad"] == "media"  # no debe cambiarse
+
+
+def test_actualizar_parcial_conserva_comentarios(client, ticket_con_comentario):
+    response = client.patch(
+        f"/api/v1/tickets/{ticket_con_comentario}",
+        json={"estado": "en progreso"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["comentarios"][0]["texto"] == "revisando"

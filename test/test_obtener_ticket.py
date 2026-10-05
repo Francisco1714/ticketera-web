@@ -21,3 +21,11 @@ def test_obtener_ticket(client):
     data = response.json()
     assert data["ticket_id"] == ticket_id
     assert data["solicitante"]["nombre"] == "Juan Pérez"
+
+
+def test_obtener_ticket_con_comentarios(client, ticket_con_comentario):
+    data = client.get(f"/api/v1/tickets/{ticket_con_comentario}").json()
+
+    assert data["comentarios"][0]["texto"] == "revisando"
+    assert data["comentarios"][0]["autor"] == "tecnico"
+    assert data["historial_cambios"][0]["estado_nuevo"] == "cerrado"

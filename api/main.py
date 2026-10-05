@@ -36,6 +36,10 @@ def  generar_ticket_id():
     cantidad = Ticket.objects.count() + 1
     return f"TK-{fecha}-{cantidad:04d}"
 
+def _serializar_embebidos(items):
+    """Convierte EmbeddedDocument de monoengine a dict de pydantic v2"""
+    return [i.to_mongo().to_dict()  for i  in items or []]   
+
 @app.post("/api/v1/tickets", response_model=TicketResponse, status_code=201)
 def crear_ticket(ticket:  TicketCreate):
     solicitante = Solicitante(
@@ -94,8 +98,8 @@ def listar_tickets():
             fecha_creacion=t.fecha_creacion,
             fecha_actualizacion=t.fecha_actualizacion,
             fecha_resolucion=t.fecha_resolucion,
-            comentarios=[],
-            historial_cambios=[]
+            comentarios=_serializar_embebidos(t.comentarios),
+            historial_cambios=_serializar_embebidos(t.historial_cambios)
         )
         for t in tickets 
     ]
@@ -125,8 +129,8 @@ def obtener_ticket(ticket_id: str):
         fecha_creacion=ticket.fecha_creacion,
         fecha_actualizacion=ticket.fecha_actualizacion,
         fecha_resolucion=ticket.fecha_resolucion,
-        comentarios=[],
-        historial_cambios=[]
+        comentarios=_serializar_embebidos(ticket.comentarios),
+        historial_cambios=_serializar_embebidos(ticket.historial_cambios)
     )
 
 @app.put("/api/v1/tickets/{ticket_id}", response_model=TicketResponse)
@@ -168,8 +172,8 @@ def actualizar_ticket(ticket_id: str, datos: TicketUpdate):
         fecha_creacion=ticket.fecha_creacion,
         fecha_actualizacion=ticket.fecha_actualizacion,
         fecha_resolucion=ticket.fecha_resolucion,
-        comentarios=ticket.comentarios,
-        historial_cambios=ticket.historial_cambios,
+        comentarios=_serializar_embebidos(ticket.comentarios),
+        historial_cambios=_serializar_embebidos(ticket.historial_cambios)
     )
 
 @app.patch("/api/v1/tickets/{ticket_id}", response_model=TicketResponse)
@@ -207,8 +211,8 @@ def actualizar_parcial_ticket(ticket_id: str, datos: TicketPatch):
         fecha_creacion=ticket.fecha_creacion,
         fecha_actualizacion=ticket.fecha_actualizacion,
         fecha_resolucion=ticket.fecha_resolucion,
-        comentarios=[],
-        historial_cambios=[]
+        comentarios=_serializar_embebidos(ticket.comentarios),
+        historial_cambios=_serializar_embebidos(ticket.historial_cambios)
     )
 
 @app.delete("/api/v1/tickets/{ticket_id}", status_code=204)
