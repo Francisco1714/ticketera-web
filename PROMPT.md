@@ -2,7 +2,11 @@
 
 ## 1. Rol de la IA
 
-El desarrollo de este proyecto será asistido mediante **OpenCode utilizando el modelo Mimo**.
+El desarrollo de este proyecto será asistido mediante **OpenCode utilizando el modelo big-pickle** (`opencode/big-pickle`).
+
+El entorno de trabajo del usuario es **Linux Mint**.
+
+En este entorno la IA **no debe ejecutar comandos de consola**. Debe proponerlos y esperar a que el usuario los ejecute.
 
 La IA debe actuar como **asistente técnico y mentor de desarrollo**, priorizando el aprendizaje, la comprensión del código y la construcción progresiva del sistema.
 
@@ -389,17 +393,18 @@ No utilizar `prompt.md` como sustituto de código del proyecto.
 
 La IA NO tiene autorización para ejecutar comandos de sistema por iniciativa propia.
 
+El entorno del proyecto es **Linux Mint**, por lo que los comandos son de tipo Unix/Bash, **no** de Windows.
+
 Esto incluye:
 
-* PowerShell
-* CMD
-* comandos de Windows
-* comandos de administración del sistema
-* instalación de software
+* comandos de Bash o shell
+* comandos de administración del sistema (sudo, systemctl, chmod, chown, mount)
+* instalación de software (apt, pip install, npm)
 * desinstalación de software
-* modificación de variables de entorno
+* modificación de variables de entorno del sistema
 * modificación de servicios
-* gestión de procesos
+* gestión de procesos (ps, kill, systemctl)
+* ejecución de la aplicación (uvicorn, runserver, mongod)
 
 Si una operación requiere un comando:
 
@@ -407,6 +412,119 @@ Si una operación requiere un comando:
 2. Mostrar el comando.
 3. Explicar qué resultado se espera.
 4. Dejar que el usuario decida si ejecutarlo.
+
+El usuario es siempre quien ejecuta los comandos en la consola.
+
+Única excepción: la IA puede ejecutar la suite de pruebas (`pytest`) para verificar el estado, ya que no modifica el sistema. Aun así, debe informarlo.
+
+## Comandos destructivos prohibidos
+
+Nunca proponer ni ejecutar comandos que puedan destruir datos, particiones, configuración o el propio sistema. Esta lista es de referencia; ante la duda, tratarlo como prohibido.
+
+### Borrado masivo de archivos
+
+```text
+rm -rf /
+rm -rf /*
+rm -rf ~
+rm -rf *
+rm -fr
+find ... -delete
+find ... -exec rm
+```
+
+### Sobrescritura de archivos o dispositivos
+
+```text
+dd if=... of=/dev/sdX
+dd if=/dev/zero of=...
+> archivo              (redirección que trunca el archivo)
+truncate -s 0 archivo
+shred archivo
+```
+
+### Sistemas de archivos y particiones
+
+```text
+mkfs / mkfs.ext4 / mkfs.ntfs / mkswap
+fdisk / cfdisk / sgdisk
+parted
+mount ... sobre un dispositivo existente
+```
+
+### Propietarios y permisos masivos
+
+```text
+chmod -R 777 /
+chown -R usuario /
+chmod -R 777 archivo
+chown -R usuario:vgrupo .
+```
+
+### Servicios, procesos y arranque
+
+```text
+systemctl stop / disable / mask <servicio>
+kill -9 1
+killall -9
+pkill -9
+reboot / halt / poweroff / shutdown -h now
+rmmod
+```
+
+### Red y firewall
+
+```text
+iptables -F
+ufw disable
+```
+
+### Paquetes
+
+```text
+apt autoremove
+apt purge --auto-remove
+apt remove --purge <dependencias>
+pip uninstall -y (paquetes del sistema)
+dpkg --force-all
+```
+
+### Git (además de la prohibición general de §19)
+
+```text
+git reset --hard
+git clean -fdx
+git checkout -- .     (descarta cambios sin confirmar)
+git push --force / -f
+git branch -D
+git reflog expire --expire=now --all
+git gc --prune=now
+```
+
+### Base de datos
+
+```text
+dropDatabase()
+db.tickets.drop()
+drop_collection()      (no debe usarse fuera del entorno de pruebas)
+mongodump --drop
+db.collection.remove({}) / deleteMany({}) sin filtro
+```
+
+### Ejecutar código remoto sin revisión
+
+```text
+curl ... | bash
+curl ... | sh
+wget ... | sudo bash
+pip install desde URL no verificada
+```
+
+### Reglas de seguridad
+
+* No usar `sudo` si la tarea no lo requiere.
+* Ante cualquier duda sobre si un comando es destructivo, tratarlo como destructivo y perguntar.
+* Preferir siempre la alternativa reversible: `mv` en vez de `rm`, copia de respaldo antes de sobrescribir, `git stash` en vez de descartar cambios.
 
 No ejecutar comandos destructivos.
 
@@ -919,8 +1037,9 @@ El usuario es quien decide cuándo y cómo escribir los archivos en el proyecto.
 
 # 38. Progreso del proyecto
 
-> **Última actividad:** suite pytest del CRUD (5/7 passed, 2 fallas conocidas BUG-01/BUG-02).
-> **Para retomar:** continuar con la tarea de corrección de bugs marcada en "En progreso".
+> **Última actividad:** suite pytest del CRUD en verde (7/7 passed). Verificado que BUG-01 a BUG-05 ya estaban corregidos en el código, pero este documento no los tenía marcados.
+> **Rama de trabajo actual:** `fix/bug-06-comentarios-historial` (creada por el usuario).
+> **Para retomar:** BUG-06 — devolver comentarios e historial reales en las respuestas. Ojo: los schemas Pydantic no tienen `from_attributes=True`, y `ticket.comentarios` devuelve objetos mongoengine, no pydantic. Sin ese flag, devolver los datos reales provoca 500 en vez de la lista.
 
 ## Completado
 
@@ -928,6 +1047,7 @@ El usuario es quien decide cuándo y cómo escribir los archivos en el proyecto.
 - [x] Estructura inicial FastAPI
 - [x] Configuración MongoEngine
 - [x] Variables de entorno en Django (load_dotenv en settings.py)
+- [x] Variables de entorno en FastAPI (load_dotenv en api/main.py)
 - [x] Esquemas Pydantic (schemas/ticket.py)
   - TicketCreate
   - TicketResponse
@@ -943,27 +1063,38 @@ El usuario es quien decide cuándo y cómo escribir los archivos en el proyecto.
 - [x] Conexión de endpoints con MongoDB
 - [x] Documentación Swagger UI funcional
 - [x] Suite pytest del CRUD (carpeta `test/` + conftest.py + pytest.ini con TestClient)
-  - Resultado: **5/7 passed**, 2 fallas conocidas (BUG-01/BUG-02)
+  - Resultado verificado: **7/7 passed**
   - [x] test_crear_ticket (POST) — PASSED
   - [x] test_listar_tickets (GET) — PASSED
   - [x] test_obtener_ticket (GET por id) — PASSED
   - [x] test_actualizar_ticket (PUT) — PASSED
   - [x] test_actualizar_parcial (PATCH) — PASSED
-  - [ ] test_eliminar_ticket (DELETE) — FAILED: espera 204, recibe otro status (BUG-01) y GET posterior espera 404, recibe 500 (BUG-02)
-  - [ ] test_ticket_inexistente (404) — FAILED: espera 404, recibe 500 (BUG-02)
+  - [x] test_eliminar_ticket (DELETE) — PASSED
+  - [x] test_ticket_inexistente (404) — PASSED
+- [x] Correcciones BUG-01 a BUG-05 aplicadas en código
 
 ## En progreso
 
-### Tarea de corrección de bugs (parchar al final del tramo de tests)
+### BUG-06: comentarios e historial siempre vacíos
 
-- [ ] **BUG-01**: DELETE devuelve body con status 204 (debe ir sin return) — `api/main.py` eliminar_ticket
-- [ ] **BUG-02**: GET/PUT/PATCH/DELETE sin manejo de `DoesNotExist` → error 500 en vez de 404 — `api/main.py`
-- [ ] **BUG-03**: Typo `'colection'` en `meta` de `api/models/ticket.py` (debe ser `'collection'`)
-- [ ] **BUG-04**: `api/main.py` no carga `load_dotenv()` — FastAPI no lee `.env` por sí solo
-- [ ] **BUG-05**: `TicketUpdate` (PUT) no incluye campo `estado`
-- [ ] **BUG-06**: Comentarios/historial siempre se devuelven vacíos `[]` en respuestas
+Afecta 3 endpoints que hardcodean `[]` en la respuesta:
 
-> Al corregir BUG-01 y BUG-02, re-ejecutar `test_eliminar_ticket` y `test_ticket_inexistente` hasta que queden en verde (7/7).
+- [ ] `listar_tickets` — api/main.py
+- [ ] `obtener_ticket` — api/main.py
+- [ ] `actualizar_parcial_ticket` — api/main.py
+
+`actualizar_ticket` ya devuelve los valores reales y sirve de patrón de referencia.
+
+Requisito previo: agregar `model_config = ConfigDict(from_attributes=True)` a los schemas `Comentario` y `HistorialCambio`, para que Pydantic pueda leer los `EmbeddedDocument` de mongoengine. Sin eso, la respuesta se rompe con 500.
+
+Pendiente también el test de round-trip que valide que un comentario guardado vuelve en el GET.
+
+## Deuda técnica detectada (no planned, solo registrada)
+
+- `generar_ticket_id()` usa `Ticket.objects.count() + 1`: condiciones de carrera con POST simultáneos, y los IDs se repiten tras borrar tickets.
+- `TicketResponse` se construye a mano 5 veces con los mismos 12 campos: cualquier campo nuevo hay que editarlo en 5 lugares. Candidata a función helper.
+- `conftest.py` hace `drop_collection()` sobre la base real `ticketera_test`: no hay aislamiento entre tests.
+- `@app.on_event` está deprecado en FastAPI (warning en cada corrida); corresponde migrar a `lifespan`.
 
 ## Pendiente
 
