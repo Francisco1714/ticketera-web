@@ -1,7 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
 from mongoengine import connect, disconnect
-
+from api.models.ticket import Comentario, HistorialCambio, Ticket
 from api.main import app 
 
 @pytest.fixture()
